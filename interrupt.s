@@ -1,20 +1,26 @@
 .section .text
 .align 3
 
-.globl IRQ_Handler
+.globl IRQ_Handler	@; taken from arm manual
 IRQ_Handler:
-    SUB         lr, lr, #4
-    SRSDB       sp!,#31          @ Save LR_irq and SPSR_irq to System mode stack
-    CPS #031                     @ Switch to System mode
-    PUSH        {R0-R3,R12}      @ Store other AAPCS registers
-    AND         R1, sp, #4
-    SUB         sp, sp, R1
-    PUSH        {R1, lr}
-    BL          identify_and_clear_source
-    CPSIE       i                @ Enable IRQ
-    BL          C_irq_handler
-    CPSID i                      @ Disable IRQ
-    POP         {R1,lr}
-    ADD         sp, sp, R1
-    POP         {R0-R3, R12}     @ Restore registers
-    RFEIA       sp!              @ Return using RFE from System mode stack
+	sub 	lr, lr, #4
+	stmfd 	sp!,{lr}			@; store IRQ mode's link register 
+    mrs 	r14, spsr		
+	stmfd 	sp!, {r14}			@; store IRQ_spsr 
+	
+	bl		identify_and_clear_source
+	
+    @; cpsie	i               	@; Enable IRQ
+	msr 	cpsr_c, #0x1f		@; switch to system-mode, re-enable interrupts
+	stmfd 	sp!, {r0-r3, lr}	@; save lr and changeable registers on system/user? mode stack
+	
+    bl		C_irq_handler
+	
+	ldmfd	sp!, {r0-r3, lr}	@; restore system/user mode registers
+	msr 	cpsr_c, #0x92		@; switch to IRQ mode, disable interrupts
+	@; cpsid 	i                   @; Disable IRQ
+	
+	ldmfd 	sp!, {r14}			@; get r14 for spsr settings
+	msr 	spsr_f, r14			@; restore spsr settings
+
+	ldmfd 	sp!, {pc}^	@; return from IRQ, ^ copies spsr to cpsr, so restores mode which was interrupted

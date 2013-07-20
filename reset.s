@@ -1,4 +1,7 @@
-.section .init				;@ landet an 0x8000
+@; Reset Handler installs interrupt vector table after startup - mainly taken from dwelch67's blinker examples,
+@; e.g.: https://github.com/dwelch67/raspberrypi/blob/master/blinker07/vectors.s
+
+.section .init				;@ will be put to 0x8000
 .globl _start
 _start:
 IRQ_VEC:
@@ -12,7 +15,7 @@ IRQ_VEC:
 	ldr pc, FIQ_Addr
 
 Reset_Addr:     
-	.word reset_handler		;@ (ist auch startup code)
+	.word reset_handler		;@ (is also startup code)
 Undefined_Addr: 
 	nop						
 SVC_Addr:
@@ -23,12 +26,12 @@ Abort_Addr:
 	nop
 	nop
 IRQ_Addr:
-@;    .word IRQ_Handler
-	.word irq
+    .word IRQ_Handler
 FIQ_Addr:
 	nop
 
 reset_handler:
+	@; copy irq table from 0x8000-0x8040 to 0x0-0x40
 	mov r0, #0x8000
 	mov r1, #0x0
 	ldmia r0!,{r2,r3,r4,r5,r6,r7,r8,r9}
@@ -36,50 +39,24 @@ reset_handler:
     ldmia r0!,{r2,r3,r4,r5,r6,r7,r8,r9}
     stmia r1!,{r2,r3,r4,r5,r6,r7,r8,r9}	
 	
-	;@ (PSR_IRQ_MODE|PSR_FIQ_DIS|PSR_IRQ_DIS)
-    mov r0,#0xD2
+	;@ Bit 7, 6 set to disable irq, fiq, bit 5 cleared (no Thumb mode), bit 4-0 to 10010 for IRQ mode: 11010010
+    mov r0,#0xd2
     msr cpsr_c,r0
     mov sp,#0x8000
 
-    ;@ (PSR_FIQ_MODE|PSR_FIQ_DIS|PSR_IRQ_DIS)
-    mov r0,#0xD1
+	;@ Bit 7, 6 set to disable irq, fiq, bit 5 cleared (no Thumb mode), bit 4-0 to 10001 for FIQ mode: 11010001
+    mov r0,#0xd1
     msr cpsr_c,r0
     mov sp,#0x4000
 
-    ;@ (PSR_SVC_MODE|PSR_FIQ_DIS|PSR_IRQ_DIS)
-    mov r0,#0xD3
+	;@ Bit 7, 6 set to disable irq, fiq, bit 5 cleared (no Thumb mode), bit 4-0 to 11111 for System mode: 11011111
+    mov r0,#0xdf
     msr cpsr_c,r0
     mov sp,#0x8000000
 
-    ;@ SVC MODE, IRQ ENABLED, FIQ DIS
-    ;@mov r0,#0x53
-    ;@msr cpsr_c, r0	
-	
-	;@ bl irq_setup				;@ IRQ Setup 
-	
-	;@ cpsie i           		;@ Enable IRQ
-	;@ bl enable_irq
 	bl main
 
 .globl enable_irq
 enable_irq:
-    mrs r0,cpsr
-    bic r0,r0,#0x80
-    msr cpsr_c,r0
+	cpsie i
     bx lr
-
-.globl PUT32
-PUT32:
-    str r1,[r0]
-    bx lr
-
-.globl GET32
-GET32:
-    ldr r0,[r0]
-    bx lr
-
-irq:
-    push {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}
-    bl C_irq_handler
-    pop  {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}
-    subs pc,lr,#4
