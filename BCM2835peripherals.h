@@ -19,6 +19,9 @@
 #define SYSTIM_C2 (SYSTIM_BASE + 0x14)
 #define SYSTIM_C3 (SYSTIM_BASE + 0x18)
 
+// 2s TIMER
+#define TIME_TICK 3000000 
+
 // Arm Timer hängt an prozessor clock -> die kann runtergetaktet werden!
 #define TIMER_BASE 0x2000b000
 #define TIMER_LOAD (TIMER_BASE + 0x400)

@@ -1,4 +1,4 @@
-.section .init		@ landet an 0x8000
+.section .init				;@ landet an 0x8000
 .globl _start
 _start:
 IRQ_VEC:
@@ -7,12 +7,12 @@ IRQ_VEC:
 	LDR pc, SVC_Addr
 	LDR pc, Prefetch_Addr
 	LDR pc, Abort_Addr
-	NOP                    @ Reserved vector
+	NOP                    	;@ Reserved vector
 	LDR pc, IRQ_Addr
 	ldr pc, FIQ_Addr
 
 Reset_Addr:     
-	.word reset_handler		@ (ist auch startup code)
+	.word reset_handler		;@ (ist auch startup code)
 Undefined_Addr: 
 	nop						
 SVC_Addr:
@@ -31,11 +31,11 @@ reset_handler:
 	mov r0, #0x0
 	mov r1, #0x8000
 	mov r2, #0x40
-loop$:						@ kopiert IRQ_VEC an 0x0
+loop$:						;@ kopiert IRQ_VEC an 0x0
 	subs r2, #4
 	ldr r3, [r1, r2]
 	str r3, [r0, r2]
-	blo loop$				@ branch, wenn carry-flag nicht gesetzt
+	blo loop$				;@ branch, wenn carry-flag nicht gesetzt
 	
 	;@ (PSR_IRQ_MODE|PSR_FIQ_DIS|PSR_IRQ_DIS)
     mov r0,#0xD2
@@ -56,10 +56,10 @@ loop$:						@ kopiert IRQ_VEC an 0x0
     ;@mov r0,#0x53
     ;@msr cpsr_c, r0	
 	
-	bl irq_setup			@ IRQ Setup 
+	;@ bl irq_setup				;@ IRQ Setup 
 	
-	@ cpsie i           		@ Enable IRQ
-	bl enable_irq
+	;@ cpsie i           		;@ Enable IRQ
+	;@ bl enable_irq
 	bl main
 
 .globl enable_irq
@@ -68,3 +68,14 @@ enable_irq:
     bic r0,r0,#0x80
     msr cpsr_c,r0
     bx lr
+
+.globl PUT32
+PUT32:
+    str r1,[r0]
+    bx lr
+
+.globl GET32
+GET32:
+    ldr r0,[r0]
+    bx lr
+	
