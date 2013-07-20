@@ -1,17 +1,23 @@
-#define GP_BASE 0x20200000
-#define GPFSEL0 GP_BASE
-#define GPFSEL1 (GP_BASE + 0x4)
-#define GPSET0 (GP_BASE + 0x1c)
-#define GPCLR0 (GP_BASE + 0x28)
+#include "BCM2835peripherals.h"
+#include "typedefs.h"
 
-#define GP_FSELPIN16MASK 0x001C0000
-
-typedef unsigned int  uint32_T;
-typedef unsigned char uint8_T;
-typedef unsigned short uint16_T ;
-typedef int int32_T;
-typedef	short int16_T;
-typedef char int8_T;
+void timer_wait(uint32_T waittime)
+{
+	volatile uint32_T* timerlo;
+	uint32_T starttime;
+	uint32_T difftime;
+	uint32_T acttime;
+	timerlo = (volatile uint32_T*) SYSTIM_CLO;
+	starttime = *timerlo;
+	do {
+		acttime = *timerlo;
+//		if (acttime >= starttime)
+			difftime = acttime - starttime;
+//		else
+//			difftime = starttime - acttime;
+			
+	} while (difftime <= waittime);
+}
 
 int main()
 {
@@ -26,18 +32,18 @@ int main()
 	gpioclear = (uint32_T*) GPCLR0;
 	
 	// Set gpio 16 to output
-	*gpiocntrl = (*gpiocntrl & !GP_FSELPIN16MASK) & 1<<18;
+	*gpiocntrl = 1<<18;
 	
 	while(1) 
 	{
 		// Clear Pin 16 (sets ACT)
 		*gpioclear = 1<<16;
-		// Wait for a _long_ time
-		for (i = 0; i <= 0x3f000; i++);
+		// Wait for 250000 us
+		timer_wait(250000);
 		// Set Pin 16 (clears ACT)
 		*gpioset = 1<<16;
 		// Wait again for a _long_ time
-		for (i = 0; i <= 0x3f000; i++);
+		timer_wait(250000);
 	}
 	return 1;
 }
