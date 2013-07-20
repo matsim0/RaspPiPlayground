@@ -5,14 +5,11 @@ extern void enable_irq(void);
 
 int main()
 {
-	uint32_T* gpiocntrl;
 	volatile uint32_T* systimer_clo; 
 	volatile uint32_T* systimer_cs;
 	uint32_T* systimer_c1;	
 	uint32_T* irq_enable1;
-	uint32_T bit16 = 1<<16;
-	uint32_T i;
-	uint32_T rx, ra;
+	uint32_T* gpiocntrl;
 	
 	gpiocntrl = (uint32_T*) GPFSEL1;
 	
@@ -25,10 +22,12 @@ int main()
 	// Set gpio 16 to output
 	*gpiocntrl = 1<<18;
 	
-	// in any case, set systimer new	
+	// Activate system timer c1
 	*systimer_c1 = *systimer_clo + TIME_TICK;
 	*systimer_cs = 0x2;
+	// Enable Interrupts for system timer c1
 	*irq_enable1 = 0x2; 
+	// Enable Interrupts on ARM
 	enable_irq();
 		
 	while(1);

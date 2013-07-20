@@ -5,7 +5,7 @@ uint8_T pinstate;
 
 void identify_and_clear_source(void)
 {
-	// at the moment, only timer interrupt #1 needs to be acked
+	// at the moment, only timer interrupt #1 needs to be handled
 	volatile uint32_T* systimer_clo; 
 	volatile uint32_T* systimer_cs;
 	uint32_T* systimer_c1;
@@ -35,6 +35,5 @@ void C_irq_handler(void)
 		*gpioset = 1<<16;
 	}
 	pinstate = !pinstate;
-
 }
 

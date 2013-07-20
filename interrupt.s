@@ -1,7 +1,9 @@
 .section .text
 .align 3
 
-.globl IRQ_Handler	@; taken from arm manual
+@; taken from arm manual: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0068b/CIHEDHIF.html
+
+.globl IRQ_Handler	
 IRQ_Handler:
 	sub 	lr, lr, #4
 	stmfd 	sp!,{lr}			@; store IRQ mode's link register 
@@ -23,4 +25,4 @@ IRQ_Handler:
 	ldmfd 	sp!, {r14}			@; get r14 for spsr settings
 	msr 	spsr_f, r14			@; restore spsr settings
 
-	ldmfd 	sp!, {pc}^	@; return from IRQ, ^ copies spsr to cpsr, so restores mode which was interrupted
+	ldmfd 	sp!, {pc}^			@; returns from IRQ, ^ copies spsr to cpsr, so restores mode which was interrupted

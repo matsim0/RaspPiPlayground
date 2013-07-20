@@ -7,9 +7,7 @@
 #define GPSET0 (GP_BASE + 0x1c)
 #define GPCLR0 (GP_BASE + 0x28)
 
-#define GP_FSELPIN16MASK 0x001C0000
-
-// und welcher irq?
+// System Timer runs with 1 MHz
 #define SYSTIM_BASE 0x20003000
 #define SYSTIM_CS (SYSTIM_BASE)
 #define SYSTIM_CLO (SYSTIM_BASE + 0x4)
@@ -19,10 +17,10 @@
 #define SYSTIM_C2 (SYSTIM_BASE + 0x14)
 #define SYSTIM_C3 (SYSTIM_BASE + 0x18)
 
-// .5s TIMER
+// 500ms TIMER
 #define TIME_TICK 500000 
 
-// Arm Timer hängt an prozessor clock -> die kann runtergetaktet werden!
+// Arm Timer depends on processor clock -> can be slower to save power!
 #define TIMER_BASE 0x2000b000
 #define TIMER_LOAD (TIMER_BASE + 0x400)
 #define TIMER_VALUE (TIMER_BASE + 0x404)
