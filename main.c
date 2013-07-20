@@ -5,18 +5,26 @@ extern void PUT32 ( unsigned int, unsigned int );
 extern unsigned int GET32 ( unsigned int );
 extern void enable_irq(void);
 
+
 void timer_wait(uint32_T waittime)
 {
-	volatile uint32_T* timerlo;
-	uint32_T starttime;
-	uint32_T difftime;
-	uint32_T acttime;
-	timerlo = (volatile uint32_T*) SYSTIM_CLO;
-	starttime = *timerlo;
-	do {
-		acttime = *timerlo;
-		difftime = acttime - starttime;			
-	} while (difftime <= waittime);
+	volatile uint32_T* systimer_clo; 
+	volatile uint32_T* systimer_cs;
+	uint32_T* systimer_c0;	
+
+	systimer_cs = (volatile uint32_T*) SYSTIM_CS;
+	systimer_clo = (volatile uint32_T*) SYSTIM_CLO;
+	systimer_c0 = (uint32_T*) SYSTIM_C0;
+	
+	// clear c0
+	*systimer_cs = 0x1;
+	// write next time to c0:
+	*systimer_c0 = *systimer_clo + waittime;
+	// wait until systimer_cs is set
+	while(1)
+	{
+		if (*systimer_cs & 0x1) break;
+	}
 }
 
 int main()
@@ -47,25 +55,24 @@ int main()
 	// Set gpio 16 to output
 	*gpiocntrl = 1<<18;
 	
-	// in any case, set systimer new
-	
+	// in any case, set systimer new	
 	*systimer_c1 = *systimer_clo + TIME_TICK;
 	*systimer_cs = 0x2;
 	*irq_enable1 = 0x2; 
-	// enable_irq();
+	enable_irq();
 		
 	while(1) 
 	{
 		// Clear Pin 16 (sets ACT)
-		*gpioclear = 1<<16;
-		// Wait for 250000 us
-		timer_wait(250000);
+//		*gpioclear = 1<<16;
+		// Wait for 50000 us
+		// timer_wait(50000);
 		// Set Pin 16 (clears ACT)
-		*gpioset = 1<<16;
+		// *gpioset = 1<<16;
 		// Wait again for a _long_ time
-		timer_wait(250000);
+		// timer_wait(500000);
 		// Check if irq pending register is set
-		if (*irq_pending1 & 0x2) while(1);
+		// if (*irq_pending1 & 0x2) while(1);
 	}
 	return 1;
 }

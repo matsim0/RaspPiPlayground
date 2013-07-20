@@ -23,19 +23,18 @@ Abort_Addr:
 	nop
 	nop
 IRQ_Addr:
-    .word IRQ_Handler
+@;    .word IRQ_Handler
+	.word irq
 FIQ_Addr:
 	nop
 
 reset_handler:
-	mov r0, #0x0
-	mov r1, #0x8000
-	mov r2, #0x40
-loop$:						;@ kopiert IRQ_VEC an 0x0
-	subs r2, #4
-	ldr r3, [r1, r2]
-	str r3, [r0, r2]
-	blo loop$				;@ branch, wenn carry-flag nicht gesetzt
+	mov r0, #0x8000
+	mov r1, #0x0
+	ldmia r0!,{r2,r3,r4,r5,r6,r7,r8,r9}
+    stmia r1!,{r2,r3,r4,r5,r6,r7,r8,r9}
+    ldmia r0!,{r2,r3,r4,r5,r6,r7,r8,r9}
+    stmia r1!,{r2,r3,r4,r5,r6,r7,r8,r9}	
 	
 	;@ (PSR_IRQ_MODE|PSR_FIQ_DIS|PSR_IRQ_DIS)
     mov r0,#0xD2
@@ -78,4 +77,9 @@ PUT32:
 GET32:
     ldr r0,[r0]
     bx lr
-	
+
+irq:
+    push {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}
+    bl C_irq_handler
+    pop  {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}
+    subs pc,lr,#4

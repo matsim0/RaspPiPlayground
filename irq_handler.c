@@ -1,32 +1,40 @@
 #include "BCM2835peripherals.h"
 #include "typedefs.h"
 
-void irq_setup(void)
-{
-	// setup system timer und interrupt
-	volatile uint32_T* systimer_clo; 
-	uint32_T* systimer_cs;
-	uint32_T* systimer_c1;
-	uint32_T* irq_enable1;
-	
-	systimer_clo = (volatile uint32_T*) SYSTIM_CLO;
-	systimer_cs = (uint32_T*) SYSTIM_CS;
-	systimer_c1 = (uint32_T*) SYSTIM_C1;
-	irq_enable1 = (uint32_T*) IRQ_ENABLE1;
-	
-	// Load Timer (Compare Register 1) with tick:
-	*systimer_c1 = *systimer_clo + TIME_TICK;
-	// enable system timer 1 as irq input (ist in beschreibung nicht drin, sollte aber IRQ0 sein)
-	*irq_enable1 = 0x2; 
-	// Enable next interrupt by clearing pending bit:
-	*systimer_cs = 0x2;
-}
-
-void C_irq_handler(void)
-{
-	//while(1); // stop everything!
-}
+uint8_T pinstate;
 
 void identify_and_clear_source(void)
 {
 }
+
+void C_irq_handler(void)
+{
+	// at the moment, only timer interrupt #1 needs to be acked
+	volatile uint32_T* systimer_clo; 
+	volatile uint32_T* systimer_cs;
+	uint32_T* systimer_c1;
+	uint32_T* gpioclear;
+	uint32_T* gpioset;
+
+	systimer_cs = (volatile uint32_T*) SYSTIM_CS;
+	systimer_clo = (volatile uint32_T*) SYSTIM_CLO;
+	systimer_c1 = (uint32_T*) SYSTIM_C1;
+
+	gpioclear = (uint32_T*) GPCLR0;
+	gpioset = (uint32_T*) GPSET0;
+
+	// Load Timer (Compare Register 1) with tick:
+	*systimer_c1 = *systimer_clo + TIME_TICK;
+	// Re-Enable Interrupts
+	*systimer_cs = 0x2;	
+
+	if (pinstate) {
+		// Clear Pin 16 (sets ACT)
+		*gpioclear = 1<<16;	
+	} else {
+		*gpioset = 1<<16;
+	}
+	pinstate = !pinstate;
+
+}
+
