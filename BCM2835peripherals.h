@@ -17,7 +17,14 @@
 #define SYSTIM_C2 (SYSTIM_BASE + 0x14)
 #define SYSTIM_C3 (SYSTIM_BASE + 0x18)
 
-// 500ms TIMER
+#define GPU_MAILBOX_READ 0x2000b880
+#define GPU_MAILBOX_POLL 0x2000b890
+#define GPU_MAILBOX_SENDER 0x2000b894
+#define GPU_MAILBOX_STATUS 0x2000b898
+#define GPU_MAILBOX_CONFIG 0x2000b89c
+#define GPU_MAILBOX_WRITE 0x2000b8a0
+
+// 5s TIMER
 #define TIME_TICK 500000 
 
 // Arm Timer depends on processor clock -> can be slower to save power!
@@ -41,5 +48,5 @@
 #define IRQ_DISABLE1 (IRQ_BASE + 0x21c)
 #define IRQ_DISABLE2 (IRQ_BASE + 0x220)
 #define IRQ_BASIC_DISABLE (IRQ_BASE + 0x224)
-	
+
 #endif

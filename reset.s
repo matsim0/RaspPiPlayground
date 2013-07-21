@@ -54,9 +54,4 @@ reset_handler:
     msr cpsr_c,r0
     mov sp,#0x8000000
 
-	bl main
-
-.globl enable_irq
-enable_irq:
-	cpsie i
-    bx lr
+	b main

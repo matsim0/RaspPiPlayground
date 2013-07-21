@@ -1,24 +1,26 @@
 #include "BCM2835peripherals.h"
 #include "typedefs.h"
+#include "framebuffer.h"
+#include <stdio.h>
 
-extern void enable_irq(void);
+#define XW 640
+#define YW 480
+
+#define ENABLE_IRQ asm("cpsie i")
+#define DISABLE_IRQ asm("cpsid i")
 
 int main()
 {
-	volatile uint32_T* systimer_clo; 
-	volatile uint32_T* systimer_cs;
-	uint32_T* systimer_c1;	
-	uint32_T* irq_enable1;
-	uint32_T* gpiocntrl;
+	volatile uint32_T* systimer_clo = (volatile uint32_T*) SYSTIM_CLO; 
+	volatile uint32_T* systimer_cs = (volatile uint32_T*) SYSTIM_CS;
+	uint32_T* systimer_c1 = (uint32_T*) SYSTIM_C1;	
+	uint32_T* irq_enable1 = (uint32_T*) IRQ_ENABLE1;
+	uint32_T* gpiocntrl = (uint32_T*) GPFSEL1;
+	uint32_T* gpioclear = (uint32_T*) GPCLR0;
 	
-	gpiocntrl = (uint32_T*) GPFSEL1;
-	
-	systimer_cs = (volatile uint32_T*) SYSTIM_CS;
-	systimer_clo = (volatile uint32_T*) SYSTIM_CLO;
-	systimer_c1 = (uint32_T*) SYSTIM_C1;
+	FrameBufferInfo_T* fbInfoAddr;
+	uint16_T* fbAddr; // we will have 16 bit Colour Depth
 
-	irq_enable1 = (uint32_T*) IRQ_ENABLE1;
-	
 	// Set gpio 16 to output
 	*gpiocntrl = 1<<18;
 	
@@ -27,9 +29,35 @@ int main()
 	*systimer_cs = 0x2;
 	// Enable Interrupts for system timer c1
 	*irq_enable1 = 0x2; 
+
+	// Initialise Frame Buffer
+	fbInfoAddr = InitialiseFrameBuffer(640, 480, 16);	
+	
+	if (fbInfoAddr == NULL)
+	{	
+		// signal error by lighting ACT and stopping
+		*gpioclear = 1<<16;
+		while(1);
+	}
+	
 	// Enable Interrupts on ARM
-	enable_irq();
-		
-	while(1);
+	ENABLE_IRQ;
+	
+	while(1) {
+		// 16bit colour:
+		uint16_T colour;
+		uint32_T x;
+		uint32_T y;
+		// Get Frame Buffer Info from fbInfoAddr
+		fbAddr = (uint16_T*) fbInfoAddr->gpuPointer;
+
+		for (y = 0; y < YW; y++) {
+			for (x = 0; x < XW; x++) {
+				*fbAddr = colour;
+				fbAddr++;
+			}
+			colour++;
+		}
+	};
 	return 1;
 }
