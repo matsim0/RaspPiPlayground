@@ -8,4 +8,6 @@ typedef int int32_T;
 typedef	short int16_T;
 typedef char int8_T;
 
+typedef float real32_T;
+
 #endif

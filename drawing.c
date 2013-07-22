@@ -43,9 +43,9 @@ void DrawPixel(uint32_T px, uint32_T py)
 
 void DrawLine(uint32_T x0, uint32_T y0, uint32_T x1, uint32_T y1)
 {
-	uint32_T deltax;
+	int32_T deltax;
 	int32_T stepx;
-	uint32_T deltay;
+	int32_T deltay;
 	int32_T stepy;
 	int32_T error;
 	
@@ -66,11 +66,11 @@ void DrawLine(uint32_T x0, uint32_T y0, uint32_T x1, uint32_T y1)
 	}
 	
 	error = deltax - deltay;
-	while (x0 < x1 + stepx & y0 < y1 + stepy) {
+	while (x0 != x1 + stepx & y0 != y1 + stepy) {
 		DrawPixel(x0, y0);
 		if (error * 2 >= -deltay) {
 			x0 += stepx;
-			error -= deltay;
+			error = error - deltay;
 		}
 		if (error * 2 <= deltax) {
 			y0 += stepy;
