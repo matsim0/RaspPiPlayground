@@ -24,7 +24,7 @@ FrameBufferInfo_T* InitialiseFrameBuffer(uint32_T width, uint32_T height, uint32
 	MailboxWrite(sendmessage, 1);
 	// Read back from Mailbox - if 0, it succeeded
 	error = MailboxRead(1);
-	if ( error == 0 ) return (FrameBufferInfo_T*) &FrameBufferInfo;
+	if ( error == 0 ) return &FrameBufferInfo;
 	// Otherwise, return Error
 	return NULL;
 }

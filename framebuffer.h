@@ -16,6 +16,8 @@
 		uint32_T gpuSize;
 	} FrameBufferInfo_T;
 
+	extern FrameBufferInfo_T FrameBufferInfo;
+	
 	FrameBufferInfo_T* InitialiseFrameBuffer(uint32_T width, uint32_T height, uint32_T bitDepth);
 	
 #endif

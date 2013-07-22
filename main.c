@@ -19,8 +19,7 @@ int main()
 	uint32_T* gpioclear = (uint32_T*) GPCLR0;
 	
 	FrameBufferInfo_T* fbInfoAddr;
-	uint16_T* fbAddr; // we will have 16 bit Colour Depth
-
+	
 	// Set gpio 16 to output
 	*gpiocntrl = 1<<18;
 	
@@ -40,21 +39,22 @@ int main()
 		while(1);
 	}
 	
+	SetGraphicsAddress(fbInfoAddr);
+	
 	// Enable Interrupts on ARM
 	ENABLE_IRQ;
+
 	
 	while(1) {
 		// 16bit colour:
 		uint16_T colour;
 		uint32_T x;
 		uint32_T y;
-		// Get Frame Buffer Info from fbInfoAddr
-		fbAddr = (uint16_T*) fbInfoAddr->gpuPointer;
 
 		for (y = 0; y < YW; y++) {
 			for (x = 0; x < XW; x++) {
-				*fbAddr = colour;
-				fbAddr++;
+				SetForeColour(colour);
+				DrawPixel(x, y);
 			}
 			colour++;
 		}
