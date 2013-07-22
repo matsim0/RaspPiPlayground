@@ -12,7 +12,7 @@
 		uint32_T bitDepth;
 		uint32_T x;
 		uint32_T y;
-		uint32_T* gpuPointer;
+		void* gpuPointer;
 		uint32_T gpuSize;
 	} FrameBufferInfo_T;
 
