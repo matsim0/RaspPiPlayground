@@ -1,11 +1,9 @@
 #include "BCM2835peripherals.h"
 #include "typedefs.h"
 #include "framebuffer.h"
-#include <stdio.h>
+#include "drawing.h"
+#include <stddef.h>
 #include <math.h>
-
-#define XW 640
-#define YW 480
 
 #define ENABLE_IRQ asm("cpsie i")
 #define DISABLE_IRQ asm("cpsid i")
@@ -41,36 +39,41 @@ int main()
 	}
 	
 	SetGraphicsAddress(fbInfoAddr);
+
+	SetForeColour(0xffff);
+	DrawLine(0,0,639,0);
+	DrawLine(0,10,639,10);
+	clearScreen();
+	DrawLine(0,20,639,30);
 	
 	// Enable Interrupts on ARM
 	ENABLE_IRQ;
 
-	SetForeColour(0xffff);
-	DrawLine(0,0,639,0);
-	//DrawLine(0,10,639,10);
-	//DrawLine(0,20,639,30);
 	
 	while(1) {
-		// 16bit colour:
-		uint16_T colour;
-		uint32_T x;
-		uint32_T y;
-		uint32_T x_old;
-		uint32_T y_old;
-		uint32_T rnd;
+		uint16_T x;
+		uint16_T y;
+		uint16_T x_old;
+		uint16_T y_old;
+		uint32_T colour;
+		uint32_T error;
+		uint32_T message;
 		
-		rnd++;
-		
-		y = Random(rnd);
-		
-		x = rnd % XW; 
-		y = y>>23;
-		
-		SetForeColour(colour--);
-		DrawLine(x_old, y_old, x, y);
-		
-		x_old = x;
-		y_old = y;
+		if (readQueue(0, &message)) {
+			x = (uint16_T) (message & 0xffff);
+			y = (uint16_T) (message >> 16);
+			if (x > x_old) {
+				DrawLine(x_old, y_old, x, y);
+			} else {
+				clearScreen();
+				SetForeColour(colour);
+				colour--;
+			}
+
+			x_old = x;
+			y_old = y;	
+		}
+
 	};
 	return 1;
 }

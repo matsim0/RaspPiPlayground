@@ -1,8 +1,9 @@
-#include <stdlib.h>
+#include <stddef.h>
 #include "typedefs.h"
 #include "framebuffer.h"
 
 uint32_T foreColour = 0xffff;
+uint32_T backColour = 0x000f;
 FrameBufferInfo_T* graphicsAddress = NULL;
 
 void SetForeColour(uint32_T colour)
@@ -13,6 +14,24 @@ void SetForeColour(uint32_T colour)
 void SetGraphicsAddress(FrameBufferInfo_T* address)
 {
 	graphicsAddress = address;
+}
+
+void clearScreen(void)
+{
+	uint32_T ii;
+	uint16_T* address;			// only implementation for 16bit colour depth
+	uint32_T width;
+	uint32_T height;
+
+	if (graphicsAddress != NULL) {
+		address = graphicsAddress->gpuPointer;
+		width = graphicsAddress->physWidth;
+		height = graphicsAddress->physHeight;
+		for (ii = 0; ii < width*height; ii++)
+		{
+			*(address + ii) = (uint16_T) backColour;
+		}
+	}
 }
 
 void DrawPixel(uint32_T px, uint32_T py)

@@ -24,8 +24,8 @@
 #define GPU_MAILBOX_CONFIG 0x2000b89c
 #define GPU_MAILBOX_WRITE 0x2000b8a0
 
-// 5s TIMER
-#define TIME_TICK 500000 
+// 10ms TIMER
+#define TIME_TICK 10000 
 
 // Arm Timer depends on processor clock -> can be slower to save power!
 #define TIMER_BASE 0x2000b000

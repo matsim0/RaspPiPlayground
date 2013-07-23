@@ -2,7 +2,7 @@
 #include "framebuffer.h"
 #include "postman.h"
 #include "BCM2835peripherals.h"
-#include <stdlib.h>
+#include <stddef.h>
 
 extern FrameBufferInfo_T FrameBufferInfo;
 
