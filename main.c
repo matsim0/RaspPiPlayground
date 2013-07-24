@@ -2,6 +2,7 @@
 #include "typedefs.h"
 #include "framebuffer.h"
 #include "drawing.h"
+#include "queue.h"
 #include <stddef.h>
 #include <math.h>
 
@@ -57,11 +58,11 @@ int main()
 		uint16_T y_old;
 		uint32_T colour;
 		uint32_T error;
-		uint32_T message;
+		uint32_T message[QUEUE_DIM];
 		
-		if (readQueue(0, &message)) {
-			x = (uint16_T) (message & 0xffff);
-			y = (uint16_T) (message >> 16);
+		if (readQueue(0, message)) {
+			x = message[0] % XW;		// time in ms: 1ms is 1 px, wrapped around screen width
+			y = message[1];
 			if (x > x_old) {
 				DrawLine(x_old, y_old, x, y);
 			} else {

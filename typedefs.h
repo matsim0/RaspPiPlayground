@@ -1,7 +1,8 @@
 #ifndef TYPEDEFS_H
 #define TYPEDEFS_H
 
-typedef unsigned int  uint32_T;
+typedef unsigned long long int uint64_T;
+typedef unsigned int uint32_T;
 typedef unsigned char uint8_T;
 typedef unsigned short uint16_T ;
 typedef int int32_T;
