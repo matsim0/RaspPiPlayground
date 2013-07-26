@@ -5,9 +5,10 @@
 #include "queue.h"
 #include <stddef.h>
 #include <math.h>
+#include "system.h"
+#include "tags.h"
 
-#define ENABLE_IRQ asm("cpsie i")
-#define DISABLE_IRQ asm("cpsid i")
+#define STRBUFLENGTH 2000
 
 int main()
 {
@@ -19,6 +20,11 @@ int main()
 	uint32_T* gpioclear = (uint32_T*) GPCLR0;
 	
 	FrameBufferInfo_T* fbInfoAddr;
+
+	uint32_T* tag_cmdline;
+	
+	uint32_T ii;
+	uint8_T output[] = "Test Eins\n\t1 23 45";
 	
 	// Set gpio 16 to output
 	*gpiocntrl = 1<<18;
@@ -42,14 +48,29 @@ int main()
 	SetGraphicsAddress(fbInfoAddr);
 
 	SetForeColour(0xffff);
-	DrawLine(0,0,639,0);
-	DrawLine(0,10,639,10);
+	DrawLine(0,0,XW-1,0);
+	DrawLine(0,10,XW-1,10);
 	clearScreen();
-	DrawLine(0,20,639,30);
+	
+	for (ii = 0; ii < 26; ii++)
+		DrawCharacter(0x41+ii, ii*8, 0);				
+	for (ii = 0; ii < 26; ii++)
+		DrawCharacter(0x41+ii, 4 + ii*8, 16);				
+
+	DrawLine(0,50,XW-1,30);
+	
+	DrawString(output, 17, 20, YW/2);
+	
+	clearScreen();
+	
+	// Find cmdline tag
+	tag_cmdline = FindTag(9);
+	DrawString((uint8_T*)(tag_cmdline+2), (*tag_cmdline) - 2, 0, 0);
 	
 	// Enable Interrupts on ARM
 	ENABLE_IRQ;
 
+	while(1);
 	
 	while(1) {
 		uint16_T x;
@@ -69,6 +90,8 @@ int main()
 				clearScreen();
 				SetForeColour(colour);
 				colour--;
+				for (ii = 0; ii < 64; ii++)
+					DrawCharacter(0x41+ii, ii*8, 0);				
 			}
 
 			x_old = x;

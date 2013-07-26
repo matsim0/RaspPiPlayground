@@ -1,6 +1,9 @@
 #include <stddef.h>
 #include "typedefs.h"
 #include "framebuffer.h"
+#include "drawing.h"
+#include "system.h"
+#include "font.h"
 
 uint32_T foreColour = 0xffff;
 uint32_T backColour = 0x000f;
@@ -16,48 +19,76 @@ void SetGraphicsAddress(FrameBufferInfo_T* address)
 	graphicsAddress = address;
 }
 
-void clearScreen(void)
+void DrawString(uint8_T string[], uint32_T length, uint32_T x, uint32_T y)
+{
+	uint32_T ii;
+	uint32_T xdraw = x;
+	uint32_T ydraw = y;
+	for (ii = 0; ii < length; ii++)
+	{
+		if (string[ii] == '\n') {
+			xdraw = x;
+			ydraw = ydraw + CHEIGHT;		
+		} else if (string[ii] == '\t') {
+			xdraw = xdraw + 5 * CWIDTH;	
+		} else {			
+			DrawCharacter(string[ii], xdraw, ydraw);
+			xdraw = xdraw + CWIDTH;
+		}
+	}
+}
+
+void DrawCharacter(uint8_T character, uint32_T x, uint32_T y)
+{
+	uint32_T* charAddress = (uint32_T*)(&font + character*4); 	// Character Pictures are stored in 16 bytes 
+	uint32_T row;
+	uint32_T bit;
+	uint32_T bits;
+	if (character > 128) return;
+	// in every 32bit row in .bin are 4 Lines for drawing
+	for (row = 0; row < 4; row++)
+	{
+		bits = *(charAddress + row);
+		for (bit = 0; bit < 32; bit++)
+		{
+			if ( (bits >> bit)&0x1 == 0x1) 
+				DrawPixel(x + bit%8, y + row*4 + bit/8 );
+		}
+	}
+}
+
+uint32_T clearScreen(void)
 {
 	uint32_T ii;
 	uint16_T* address;			// only implementation for 16bit colour depth
 	uint32_T width;
 	uint32_T height;
 
-	if (graphicsAddress != NULL) {
-		address = graphicsAddress->gpuPointer;
-		width = graphicsAddress->physWidth;
-		height = graphicsAddress->physHeight;
-		for (ii = 0; ii < width*height; ii++)
-		{
-			*(address + ii) = (uint16_T) backColour;
-		}
+	if (graphicsAddress == NULL) return 0;
+	address = graphicsAddress->gpuPointer;
+	width = graphicsAddress->physWidth;
+	height = graphicsAddress->physHeight;
+	for (ii = 0; ii < width*height; ii++)
+	{
+		*(address + ii) = (uint16_T) backColour;
 	}
+	return 1;
 }
 
-void DrawPixel(uint32_T px, uint32_T py)
+uint32_T DrawPixel(uint32_T px, uint32_T py)
 {
 	uint32_T height;
 	uint32_T width;
+	uint16_T *pixel;		// only implementation for 16bit colour depth
 	
-	if (graphicsAddress == NULL) return; // check if Address already set
+	if (graphicsAddress == NULL) return 0; // check if Address already set
 	height = graphicsAddress->physHeight;
 	width = graphicsAddress->physWidth;
 	if (py >= height) return;
 	if (px >= width) return;
-	// depending on bitDepth, there are different pointer types:
-	if (graphicsAddress->bitDepth <= 8) {
-		uint8_T *pixel;
-		pixel = graphicsAddress->gpuPointer;
-		*(pixel + py * width + px) = (uint8_T) foreColour;
-	} else if (graphicsAddress->bitDepth <= 16) {
-		uint16_T *pixel;
-		pixel = graphicsAddress->gpuPointer;
-		*(pixel + py * width + px) = (uint16_T) foreColour;
-	} else {
-		uint32_T *pixel;
-		pixel = graphicsAddress->gpuPointer;
-		*(pixel + py * width + px) = (uint32_T) foreColour;
-	}
+	pixel = graphicsAddress->gpuPointer;
+	*(pixel + py * width + px) = (uint16_T) foreColour;
+	return 1;
 }
 
 void DrawLine(uint32_T x0, uint32_T y0, uint32_T x1, uint32_T y1)

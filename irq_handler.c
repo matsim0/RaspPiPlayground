@@ -2,8 +2,10 @@
 #include "typedefs.h"
 #include "drawing.h"
 #include "queue.h"	
+#include "system.h"
 
 uint8_T pinstate;
+uint32_T systick;
 
 void identify_and_clear_source(void)
 {
@@ -18,7 +20,6 @@ void identify_and_clear_source(void)
 	*systimer_cs = 0x2;	
 }
 
-uint32_T systick;
 int32_T y_old;	// ok, static should be used...
 
 // Gets called every TIME_TICK timer ticks (timer ticks in us)
