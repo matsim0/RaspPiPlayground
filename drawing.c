@@ -24,16 +24,28 @@ void DrawString(uint8_T string[], uint32_T length, uint32_T x, uint32_T y)
 	uint32_T ii;
 	uint32_T xdraw = x;
 	uint32_T ydraw = y;
+	if (x > XW - CWIDTH - 1) return; // We do wrap around the screen width to x - therefore it must be possible to draw at least one character
 	for (ii = 0; ii < length; ii++)
 	{
 		if (string[ii] == '\n') {
 			xdraw = x;
-			ydraw = ydraw + CHEIGHT;		
+			ydraw = (ydraw + CHEIGHT) % YW;		
 		} else if (string[ii] == '\t') {
+			int32_T overlap;
 			xdraw = xdraw + 5 * CWIDTH;	
+			overlap = xdraw-XW;
+			while(overlap >= 0) {
+				ydraw = (ydraw + CHEIGHT) % YW;
+				xdraw = x + overlap;
+				overlap = xdraw - XW;
+			}
 		} else {			
 			DrawCharacter(string[ii], xdraw, ydraw);
 			xdraw = xdraw + CWIDTH;
+			if (xdraw > XW - 1) {
+				xdraw = x;
+				ydraw = (ydraw + CHEIGHT) % YW;
+			}
 		}
 	}
 }
