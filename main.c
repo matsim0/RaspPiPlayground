@@ -70,7 +70,8 @@ int main()
 	// Enable Interrupts on ARM
 	ENABLE_IRQ;
 
-	while(1);
+	// wait until sytick reaches 5 ms
+	while(systick < 5000000/TIME_TICK);
 	
 	while(1) {
 		uint16_T x;
